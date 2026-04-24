@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mirage Mood Machine</title>
+  <style>
+    :root {
+      --bg: #070812;
+      --panel: rgba(14, 17, 33, 0.84);
+      --panel-strong: rgba(18, 22, 41, 0.95);
+      --line: rgba(255, 255, 255, 0.08);
+      --text: #f7eefe;
+      --muted: #b8bdd8;
+      --pink: #ff4fbf;
+      --peach: #ff9a6a;
+      --gold: #ffd667;
+      --cyan: #55f3ff;
+      --lime: #bdff69;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(255, 79, 191, 0.18), transparent 24%),
+        radial-gradient(circle at 80% 15%, rgba(85, 243, 255, 0.14), transparent 28%),
+        radial-gradient(circle at 50% 0%, rgba(255, 214, 103, 0.12), transparent 32%),
+        linear-gradient(180deg, #0a0b16 0%, #0d1020 48%, #090a13 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::before {
+      background-image:
+        radial-gradient(2px 2px at 18% 22%, rgba(255,255,255,0.9), transparent 60%),
+        radial-gradient(1px 1px at 75% 18%, rgba(255,255,255,0.7), transparent 60%),
+        radial-gradient(2px 2px at 68% 40%, rgba(255,214,103,0.8), transparent 60%),
+        radial-gradient(1px 1px at 40% 14%, rgba(85,243,255,0.8), transparent 60%),
+        radial-gradient(2px 2px at 28% 62%, rgba(255,79,191,0.7), transparent 60%),
+        radial-gradient(1px 1px at 82% 58%, rgba(255,255,255,0.8), transparent 60%),
+        radial-gradient(2px 2px at 55% 72%, rgba(255,255,255,0.7), transparent 60%);
+      opacity: 0.9;
+      animation: twinkle 8s linear infinite alternate;
+    }
+
+    body::after {
+      background:
+        radial-gradient(circle at 50% 62%, rgba(255, 120, 158, 0.16), transparent 22%),
+        linear-gradient(180deg, transparent 0%, transparent 56%, rgba(255, 139, 94, 0.07) 57%, rgba(255, 93, 173, 0.18) 100%);
+      mask:
+        radial-gradient(120% 60% at 50% 100%, black 50%, transparent 51%),
+        linear-gradient(#000, #000);
+      opacity: 0.85;
+    }
+
+    @keyframes twinkle {
+      from { transform: translateY(0px); opacity: 0.75; }
+      to { transform: translateY(-12px); opacity: 1; }
+    }
+
+    .dunes {
+      position: fixed;
+      inset: auto 0 0;
+      height: 34vh;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(120% 160% at 20% 100%, rgba(255, 110, 152, 0.36) 0%, rgba(255, 110, 152, 0) 55%),
+        radial-gradient(120% 160% at 82% 110%, rgba(255, 178, 94, 0.32) 0%, rgba(255, 178, 94, 0) 55%),
+        linear-gradient(180deg, transparent 0%, rgba(24, 11, 31, 0.2) 22%, rgba(18, 10, 29, 0.94) 100%);
+      clip-path: polygon(0 58%, 12% 48%, 26% 56%, 41% 39%, 55% 52%, 68% 35%, 84% 54%, 100% 42%, 100% 100%, 0 100%);
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 28px 18px 72px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 12px;
+      justify-items: start;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-size: 0.76rem;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.1rem, 6vw, 4.6rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      max-width: 10ch;
+      text-shadow: 0 0 18px rgba(255, 79, 191, 0.24);
+    }
+
+    .sub {
+      margin: 0;
+      max-width: 58ch;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 1rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.06fr) minmax(320px, 0.94fr);
+      gap: 18px;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent 38%, transparent 62%, rgba(255,255,255,0.04));
+      pointer-events: none;
+    }
+
+    .controls {
+      padding: 22px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .reels {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .reel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 16px 12px;
+      min-height: 190px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 10px;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .reel::after {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border-radius: 16px;
+      background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.08), transparent 60%);
+      z-index: -1;
+    }
+
+    .reel-icon {
+      font-size: clamp(2.4rem, 5vw, 3.5rem);
+      line-height: 1;
+      filter: drop-shadow(0 0 16px rgba(255, 154, 106, 0.25));
+      transition: transform 0.25s ease;
+    }
+
+    .reel.spinning .reel-icon {
+      animation: bounce 0.16s linear infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(-8px) scale(1.02); }
+      to { transform: translateY(8px) scale(0.98); }
+    }
+
+    .reel-name {
+      font-size: 1rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .reel-meta {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      text-align: center;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      color: #130818;
+      font-weight: 900;
+      font-size: 0.98rem;
+      border-radius: 18px;
+      padding: 14px 16px;
+      transition: transform 0.15s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+    }
+
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+    button:disabled { opacity: 0.55; cursor: progress; }
+
+    .primary { background: linear-gradient(135deg, var(--gold), var(--peach)); }
+    .secondary { background: linear-gradient(135deg, var(--cyan), #8df6ff); }
+    .ghost {
+      color: var(--text);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 12px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    .tiny-note {
+      margin-top: -4px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .symbol-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+      gap: 10px;
+    }
+
+    .symbol-chip {
+      padding: 10px 8px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--muted);
+      display: grid;
+      gap: 6px;
+    }
+
+    .symbol-chip strong {
+      color: var(--text);
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .result-wrap {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .result-card {
+      position: relative;
+      min-height: 100%;
+      border-radius: 28px;
+      padding: 24px;
+      background:
+        radial-gradient(circle at top right, rgba(85, 243, 255, 0.18), transparent 32%),
+        radial-gradient(circle at bottom left, rgba(255, 79, 191, 0.2), transparent 34%),
+        linear-gradient(160deg, rgba(19, 24, 46, 0.98), rgba(9, 12, 24, 0.96));
+      border: 1px solid rgba(255,255,255,0.08);
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 30px 60px rgba(0,0,0,0.28);
+    }
+
+    .result-card::before {
+      content: "";
+      position: absolute;
+      inset: auto -10% -38% auto;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 214, 103, 0.32), rgba(255, 214, 103, 0));
+      filter: blur(4px);
+    }
+
+    .result-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      color: #fff0a5;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 900;
+    }
+
+    .result-title {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4.4vw, 3.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      max-width: 10ch;
+    }
+
+    .result-sub {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 44ch;
+    }
+
+    .triple {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0 22px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .symbol-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      gap: 6px;
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-weight: 800;
+    }
+
+    .stat-value {
+      font-size: 1.04rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .fortune {
+      margin-top: 14px;
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(255,79,191,0.13), rgba(255,214,103,0.1));
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 1rem;
+      line-height: 1.6;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 0.84rem;
+      text-align: center;
+      padding-top: 2px;
+    }
+
+    .flash {
+      position: fixed;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%) translateY(18px);
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(15,18,35,0.94);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: 0.25s ease;
+      z-index: 10;
+    }
+
+    .flash.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    @media (max-width: 920px) {
+      .layout { grid-template-columns: 1fr; }
+      h1 { max-width: 12ch; }
+      .result-title { max-width: 100%; }
+    }
+
+    @media (max-width: 560px) {
+      .page { padding-inline: 14px; }
+      .controls, .result-wrap, .result-card { padding: 18px; }
+      .reels { gap: 10px; }
+      .reel { min-height: 166px; padding: 14px 10px; }
+      .button-row { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; }
+      .topbar, .result-top { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="dunes"></div>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Palm Springs fortune engine</div>
+      <h1>Mirage Mood Machine</h1>
+      <p class="sub">Spin three desert reels and let the valley decide your vibe. You’ll get a glossy little prophecy: forecast, soundtrack, mission, lucky number, and a mildly unhinged fortune to steer the day.</p>
+    </section>
+
+    <section class="layout">
+      <div class="panel controls">
+        <div class="topbar">
+          <div>
+            <div class="pill">✦ Night mode only</div>
+          </div>
+          <div class="pill">🎰 14 desert symbols</div>
+        </div>
+
+        <div class="reels" id="reels"></div>
+
+        <div class="button-row">
+          <button class="primary" id="spinBtn">Spin the Mirage</button>
+          <button class="secondary" id="surpriseBtn">Surprise Me</button>
+          <button class="ghost" id="copyBtn">Copy Result</button>
+          <button class="ghost" id="downloadBtn">Download Poster</button>
+        </div>
+
+        <div class="tiny-note" id="statusText">Ready when you are. Tonight feels a little lucky.</div>
+
+        <div>
+          <div class="pill">Symbol lounge</div>
+          <div class="symbol-grid" id="symbolGrid" style="margin-top:12px;"></div>
+        </div>
+      </div>
+
+      <div class="panel result-wrap">
+        <article class="result-card" id="posterCard">
+          <div class="result-top">
+            <div class="tag">☼ Fresh reading</div>
+            <div class="pill" id="timeBadge">Desert after dark</div>
+          </div>
+
+          <h2 class="result-title" id="resultTitle">Poolside Main Character</h2>
+          <p class="result-sub" id="resultSub">A glossy little alignment for warm nights, overdesigned impulses, and exactly the right amount of chaos.</p>
+
+          <div class="triple" id="comboRow"></div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-label">Forecast</div>
+              <div class="stat-value" id="forecast">Neon skies with a 92% chance of people asking where you got your taste.</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Lucky number</div>
+              <div class="stat-value" id="lucky">28</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Soundtrack mood</div>
+              <div class="stat-value" id="soundtrack">Chrome disco by the pool</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Suggested mission</div>
+              <div class="stat-value" id="mission">Say yes to one delightfully extra idea before noon.</div>
+            </div>
+          </div>
+
+          <div class="fortune" id="fortune">Your charm is fully charged. Use it for nonsense, style decisions, or mild strategic domination.</div>
+        </article>
+        <div class="footer-note">Pro tip: hit Download Poster if the machine spits out something weirdly accurate.</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="flash" id="flash"></div>
+
+  <script>
+    const symbols = [
+      { icon: '☀️', name: 'Sun', vibe: 'radiant confidence', color: '#ffd667' },
+      { icon: '🏖️', name: 'Pool', vibe: 'slow luxury', color: '#55f3ff' },
+      { icon: '🍸', name: 'Martini', vibe: 'crisp mischief', color: '#d8fff8' },
+      { icon: '🎲', name: 'Dice', vibe: 'playful risk', color: '#ff9a6a' },
+      { icon: '🎵', name: 'Vinyl', vibe: 'curated nostalgia', color: '#ff4fbf' },
+      { icon: '🌵', name: 'Cactus', vibe: 'desert nerve', color: '#bdff69' },
+      { icon: '🌴', name: 'Palm', vibe: 'vacation swagger', color: '#7bf0bf' },
+      { icon: '🦩', name: 'Flamingo', vibe: 'camp glamour', color: '#ff7dcf' },
+      { icon: '🐕', name: 'Dog', vibe: 'loyal joy', color: '#f5d08b' },
+      { icon: '🌙', name: 'Moon', vibe: 'midnight magnetism', color: '#c6c8ff' },
+      { icon: '🍒', name: 'Cherry', vibe: 'retro flirt energy', color: '#ff6678' },
+      { icon: '📸', name: 'Camera', vibe: 'main-stage framing', color: '#d4dbff' },
+      { icon: '🔑', name: 'Motel Key', vibe: 'iconic detour', color: '#ffd19a' },
+      { icon: '🛼', name: 'Roller', vibe: 'sparkly momentum', color: '#8ce9ff' }
+    ];
+
+    const titleStarts = ['Velvet', 'Mirage', 'Golden', 'Moonlit', 'Neon', 'Poolside', 'Cherry', 'Electric', 'Sundown', 'Palm'];
+    const titleEnds = ['Mood', 'Detour', 'High', 'Frequency', 'Privilege', 'Parade', 'Instinct', 'Glitter', 'Agenda', 'Manifesto'];
+    const forecastMods = ['a warm front of attention', 'light winds carrying audacity', 'sunset-grade confidence', 'designer-level composure', 'good chaos moving in from the west', 'a strange but beneficial coincidence'];
+    const soundtrackMods = ['chrome disco by the pool', 'late-night casino synth', 'top-down desert cruising', 'sun-bleached house music', 'martini lounge with a pulse', 'vinyl crackle and expensive lighting'];
+    const missionMods = ['Make one extremely tasteful dramatic choice.', 'Text the idea before it disappears.', 'Turn a tiny errand into a main-character scene.', 'Follow the funniest possible good decision.', 'Give your best idea a better outfit.', 'Leave room for serendipity and one shiny side quest.'];
+    const fortuneMods = [
+      'Your timing is suspiciously excellent. Do something that deserves applause.',
+      'A little style goes further than force tonight. Glide, don’t grind.',
+      'The universe is in a flirtatious mood. Accept the compliment and keep moving.',
+      'Luck likes commitment. Pick a lane, then make it fabulous.',
+      'You are one tiny reckless idea away from a memorable story.',
+      'Tonight rewards clean instincts and delightfully overqualified taste.'
+    ];
+
+    const reelsEl = document.getElementById('reels');
+    const symbolGrid = document.getElementById('symbolGrid');
+    const flash = document.getElementById('flash');
+    const spinBtn = document.getElementById('spinBtn');
+    const surpriseBtn = document.getElementById('surpriseBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const statusText = document.getElementById('statusText');
+
+    const resultTitle = document.getElementById('resultTitle');
+    const resultSub = document.getElementById('resultSub');
+    const comboRow = document.getElementById('comboRow');
+    const forecastEl = document.getElementById('forecast');
+    const luckyEl = document.getElementById('lucky');
+    const soundtrackEl = document.getElementById('soundtrack');
+    const missionEl = document.getElementById('mission');
+    const fortuneEl = document.getElementById('fortune');
+    const timeBadge = document.getElementById('timeBadge');
+
+    let currentSymbols = [symbols[0], symbols[1], symbols[2]];
+    let isSpinning = false;
+
+    function renderReels(initial = currentSymbols) {
+      reelsEl.innerHTML = '';
+      initial.forEach((symbol, index) => {
+        const reel = document.createElement('div');
+        reel.className = 'reel';
+        reel.innerHTML = `
+          <div class="reel-icon" id="reelIcon${index}">${symbol.icon}</div>
+          <div class="reel-name" id="reelName${index}">${symbol.name}</div>
+          <div class="reel-meta" id="reelMeta${index}">${symbol.vibe}</div>
+        `;
+        reelsEl.appendChild(reel);
+      });
+    }
+
+    function renderSymbolGrid() {
+      symbolGrid.innerHTML = symbols.map(symbol => `
+        <div class="symbol-chip">
+          <strong>${symbol.icon}</strong>
+          <span>${symbol.name}</span>
+        </div>
+      `).join('');
+    }
+
+    function pickRandomSymbol() {
+      return symbols[Math.floor(Math.random() * symbols.length)];
+    }
+
+    function hashString(text) {
+      return [...text].reduce((sum, char, index) => sum + char.charCodeAt(0) * (index + 3), 0);
+    }
+
+    function buildReading(triple) {
+      const names = triple.map(item => item.name);
+      const vibes = triple.map(item => item.vibe);
+      const joined = names.join(' • ');
+      const base = hashString(names.join('|'));
+      const lucky = (base % 88) + 11;
+      const title = `${titleStarts[base % titleStarts.length]} ${titleEnds[(base * 3) % titleEnds.length]}`;
+      const descriptor = vibes[(base + 1) % vibes.length];
+      const forecast = `Expect ${forecastMods[base % forecastMods.length]} powered by ${descriptor}.`;
+      const soundtrack = `${soundtrackMods[(base + 2) % soundtrackMods.length]} with ${names[0].toLowerCase()} accents.`;
+      const mission = `${missionMods[(base + 3) % missionMods.length]} ${names.includes('Dice') ? 'Yes, a tiny gamble counts.' : ''}`.trim();
+
+      let fortune = fortuneMods[(base + 4) % fortuneMods.length];
+      if (names.includes('Dog')) {
+        fortune += ' Bailey easter egg: if a good idea arrives during a walk, trust the dog-level wisdom.';
+      }
+      if (names.filter(name => name === 'Moon').length >= 1 && names.includes('Martini')) {
+        fortune = 'Moon + martini is a glamorous warning label. Hydrate, then cause a tasteful scene.';
+      }
+      if (new Set(names).size === 1) {
+        fortune = `Triple ${names[0]} is absurdly powerful. The machine believes you should lean all the way in.`;
+      }
+
+      return {
+        title,
+        subtitle: `Tonight's alignment is ${joined} — a cocktail of ${vibes.join(', ')}.` ,
+        forecast,
+        lucky,
+        soundtrack,
+        mission,
+        fortune,
+        triple
+      };
+    }
+
+    function updateResult(reading) {
+      resultTitle.textContent = reading.title;
+      resultSub.textContent = reading.subtitle;
+      forecastEl.textContent = reading.forecast;
+      luckyEl.textContent = reading.lucky;
+      soundtrackEl.textContent = reading.soundtrack;
+      missionEl.textContent = reading.mission;
+      fortuneEl.textContent = reading.fortune;
+      comboRow.innerHTML = reading.triple.map(symbol => `<span class="symbol-pill">${symbol.icon} ${symbol.name}</span>`).join('');
+      const hour = new Date().getHours();
+      timeBadge.textContent = hour < 6 ? '3AM desert magic' : hour < 18 ? 'Daylight reading' : 'After-hours omen';
+    }
+
+    function setStatus(text) {
+      statusText.textContent = text;
+    }
+
+    function showFlash(text) {
+      flash.textContent = text;
+      flash.classList.add('show');
+      clearTimeout(showFlash.timer);
+      showFlash.timer = setTimeout(() => flash.classList.remove('show'), 2200);
+    }
+
+    function setReel(index, symbol) {
+      document.getElementById(`reelIcon${index}`).textContent = symbol.icon;
+      document.getElementById(`reelName${index}`).textContent = symbol.name;
+      document.getElementById(`reelMeta${index}`).textContent = symbol.vibe;
+    }
+
+    async function spin(targets) {
+      if (isSpinning) return;
+      isSpinning = true;
+      spinBtn.disabled = true;
+      surpriseBtn.disabled = true;
+      setStatus('Spinning up a fresh omen...');
+
+      const reelNodes = [...document.querySelectorAll('.reel')];
+      reelNodes.forEach(node => node.classList.add('spinning'));
+
+      const durations = [950, 1350, 1750];
+      const promises = durations.map((duration, index) => new Promise(resolve => {
+        const interval = setInterval(() => setReel(index, pickRandomSymbol()), 90 + index * 10);
+        setTimeout(() => {
+          clearInterval(interval);
+          setReel(index, targets[index]);
+          reelNodes[index].classList.remove('spinning');
+          resolve();
+        }, duration);
+      }));
+
+      await Promise.all(promises);
+      currentSymbols = targets;
+      const reading = buildReading(currentSymbols);
+      updateResult(reading);
+      setStatus(`Reading locked: ${reading.title}.`);
+      spinBtn.disabled = false;
+      surpriseBtn.disabled = false;
+    }
+
+    function randomTriple() {
+      return [pickRandomSymbol(), pickRandomSymbol(), pickRandomSymbol()];
+    }
+
+    async function copyResult() {
+      const text = [
+        `Mirage Mood Machine — ${resultTitle.textContent}`,
+        resultSub.textContent,
+        `Forecast: ${forecastEl.textContent}`,
+        `Lucky number: ${luckyEl.textContent}`,
+        `Soundtrack mood: ${soundtrackEl.textContent}`,
+        `Suggested mission: ${missionEl.textContent}`,
+        `Fortune: ${fortuneEl.textContent}`
+      ].join('\n');
+
+      try {
+        await navigator.clipboard.writeText(text);
+        showFlash('Copied your reading. ✨');
+      } catch (error) {
+        showFlash('Clipboard said no. Old-school select/copy time.');
+      }
+    }
+
+    function roundedRect(ctx, x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    function drawPoster() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1600;
+      canvas.height = 2000;
+      const ctx = canvas.getContext('2d');
+
+      const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      bg.addColorStop(0, '#0a0b16');
+      bg.addColorStop(0.55, '#12152a');
+      bg.addColorStop(1, '#090910');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const glow1 = ctx.createRadialGradient(300, 260, 20, 300, 260, 460);
+      glow1.addColorStop(0, 'rgba(255,79,191,0.42)');
+      glow1.addColorStop(1, 'rgba(255,79,191,0)');
+      ctx.fillStyle = glow1;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      const glow2 = ctx.createRadialGradient(1220, 300, 20, 1220, 300, 520);
+      glow2.addColorStop(0, 'rgba(85,243,255,0.30)');
+      glow2.addColorStop(1, 'rgba(85,243,255,0)');
+      ctx.fillStyle = glow2;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = 'rgba(255,255,255,0.85)';
+      for (let i = 0; i < 42; i++) {
+        const x = (i * 97) % canvas.width;
+        const y = (i * 181) % 820;
+        ctx.beginPath();
+        ctx.arc(x, y, i % 3 === 0 ? 2.4 : 1.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.fillStyle = 'rgba(22,11,30,0.94)';
+      ctx.beginPath();
+      ctx.moveTo(0, 1520);
+      ctx.bezierCurveTo(220, 1420, 360, 1560, 560, 1460);
+      ctx.bezierCurveTo(760, 1360, 890, 1530, 1130, 1420);
+      ctx.bezierCurveTo(1330, 1320, 1450, 1480, 1600, 1390);
+      ctx.lineTo(1600, 2000);
+      ctx.lineTo(0, 2000);
+      ctx.closePath();
+      ctx.fill();
+
+      roundedRect(ctx, 98, 120, 1404, 1590, 52);
+      ctx.fillStyle = 'rgba(16,20,39,0.86)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffd667';
+      ctx.font = '700 34px Inter, Arial, sans-serif';
+      ctx.fillText('MIRAGE MOOD MACHINE', 160, 204);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 112px Inter, Arial, sans-serif';
+      wrapText(ctx, resultTitle.textContent, 160, 330, 1140, 118);
+
+      ctx.fillStyle = '#c8cee6';
+      ctx.font = '500 42px Inter, Arial, sans-serif';
+      wrapText(ctx, resultSub.textContent, 160, 520, 1180, 56);
+
+      const pillsY = 710;
+      currentSymbols.forEach((symbol, index) => {
+        const x = 160 + index * 320;
+        roundedRect(ctx, x, pillsY, 252, 104, 34);
+        ctx.fillStyle = 'rgba(255,255,255,0.07)';
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 46px Inter, Arial, sans-serif';
+        ctx.fillText(symbol.icon, x + 26, pillsY + 65);
+        ctx.font = '800 36px Inter, Arial, sans-serif';
+        ctx.fillText(symbol.name, x + 96, pillsY + 63);
+      });
+
+      const cards = [
+        ['Forecast', forecastEl.textContent],
+        ['Lucky number', luckyEl.textContent],
+        ['Soundtrack mood', soundtrackEl.textContent],
+        ['Suggested mission', missionEl.textContent]
+      ];
+
+      cards.forEach((card, i) => {
+        const col = i % 2;
+        const row = Math.floor(i / 2);
+        const x = 160 + col * 610;
+        const y = 900 + row * 250;
+        roundedRect(ctx, x, y, 520, 200, 30);
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        ctx.fill();
+        ctx.fillStyle = '#9ba5c8';
+        ctx.font = '800 24px Inter, Arial, sans-serif';
+        ctx.fillText(card[0].toUpperCase(), x + 26, y + 42);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 38px Inter, Arial, sans-serif';
+        wrapText(ctx, card[1], x + 26, y + 92, 460, 46);
+      });
+
+      roundedRect(ctx, 160, 1420, 1180, 190, 34);
+      ctx.fillStyle = 'rgba(255,126,196,0.10)';
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 22px Inter, Arial, sans-serif';
+      ctx.fillText('FORTUNE', 188, 1465);
+      ctx.font = '600 42px Inter, Arial, sans-serif';
+      wrapText(ctx, fortuneEl.textContent, 188, 1535, 1110, 52);
+
+      ctx.fillStyle = '#b7bdd6';
+      ctx.font = '500 24px Inter, Arial, sans-serif';
+      ctx.fillText('Palm Springs fortune engine · Built for an overnight creative drop', 160, 1662);
+
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = 'mirage-mood-machine-poster.png';
+      link.click();
+      showFlash('Poster downloaded. 🎴');
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+          ctx.fillText(line.trim(), x, y);
+          line = words[n] + ' ';
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line.trim(), x, y);
+    }
+
+    renderReels();
+    renderSymbolGrid();
+    updateResult(buildReading(currentSymbols));
+
+    spinBtn.addEventListener('click', () => spin(randomTriple()));
+    surpriseBtn.addEventListener('click', async () => {
+      const triple = randomTriple();
+      await spin(triple);
+      showFlash('Fresh weirdness delivered.');
+    });
+    copyBtn.addEventListener('click', copyResult);
+    downloadBtn.addEventListener('click', drawPoster);
+  </script>
+</body>
+</html>
